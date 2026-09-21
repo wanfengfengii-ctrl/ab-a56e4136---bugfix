@@ -196,10 +196,13 @@ def adjudicate(
     n = len(sequence)
     forced = frozenset(forced_positions)
     forbidden = frozenset(forbidden_positions)
-    # Tight score packing keeps the DP values compact.  Forbidden positions
-    # cannot participate in a pair, so remove them from the attainable chain
-    # bound before reserving the stack-score range.
-    pair_unit = max(1, (n - len(forbidden) - MIN_PAIR_DISTANCE) // 2)
+    # Tight score packing keeps the DP values compact.  Every pair uses two
+    # distinct non-forbidden positions, so at most m // 2 pairs (and hence at
+    # most m // 2 stacked adjacencies) are attainable.  A unit strictly above
+    # that bound keeps stacks in the low digits for every instance, including
+    # sparse ones where few positions remain available.
+    available = n - len(forbidden)
+    pair_unit = max(1, available // 2 + 1)
     A, B, partners = _compute_tables(sequence, forced, forbidden, pair_unit)
     best = A[0][n]
     if best < 0:
